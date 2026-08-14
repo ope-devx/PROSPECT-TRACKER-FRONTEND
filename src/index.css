@@ -1,0 +1,94 @@
+/*
+  index.css — Global styles for the entire app.
+  This file is imported once in main.jsx and applies to every page.
+*/
+
+/*
+  This line pulls in the entire Tailwind CSS library.
+  Tailwind is a utility-first CSS framework — instead of writing
+  custom CSS like "color: red", you add short class names to your
+  HTML elements e.g. "text-red-400".
+  Think of this line as "load all of Tailwind's features".
+*/
+@import "tailwindcss";
+
+/*
+  @theme is a Tailwind v4 feature — it lets us define our own
+  custom design tokens (colours, fonts) so we can use them
+  as Tailwind class names throughout the app.
+
+  For example, defining --color-accent: #e94560 here means
+  anywhere in the app we can write "bg-accent" or "text-accent"
+  and Tailwind knows to use that exact red colour.
+
+  This is the ONE place where our colour palette is defined.
+  If you want to change the brand red, you only change it here.
+*/
+@theme {
+  /* Page background — almost-black dark navy */
+  --color-bg: #0f0f13;
+
+  /* Card / panel background — slightly lighter than the page */
+  --color-surface: #1a1a22;
+
+  /* Input fields, hover states — slightly lighter than surface */
+  --color-surface2: #22222e;
+
+  /* All borders — subtle dark line between elements */
+  --color-border: #2e2e3e;
+
+  /* Primary brand colour — the red used for buttons, focus rings, the logo */
+  --color-accent: #e94560;
+
+  /* Secondary brand colour — purple, used for Niche stat tile */
+  --color-accent2: #7c3aed;
+
+  /* Main body text — near-white so it's readable on dark backgrounds */
+  --color-text: #f0f0f5;
+
+  /* Muted / secondary text — grey, used for labels and subtitles */
+  --color-muted: #888899;
+
+  /*
+    font-sans = the default text font everywhere.
+    Space Grotesk is a clean, modern sans-serif loaded from Google Fonts.
+  */
+  --font-sans: "Space Grotesk", sans-serif;
+
+  /*
+    font-mono = monospace font for numbers, scores, the logo.
+    JetBrains Mono is a developer font with very even, tabular numbers.
+  */
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/*
+  box-sizing: border-box changes how element sizes are calculated.
+  By default, padding and borders ADD to an element's width.
+  With border-box, padding and borders are INCLUDED in the width.
+  This makes layout much more predictable.
+  The * selector applies this to every element in the app.
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+  Sets the page background colour and default text colour.
+  Without this, there's a flash of white before React loads.
+*/
+body {
+  background-color: #0f0f13;
+  color: #f0f0f5;
+}
+
+/*
+  accent-color changes the built-in browser colour of checkboxes.
+  Without this, checkboxes would show the browser's default blue.
+  This makes them match our brand red (#e94560 = the --color-accent value).
+*/
+input[type="checkbox"] {
+  accent-color: #e94560;
+}
