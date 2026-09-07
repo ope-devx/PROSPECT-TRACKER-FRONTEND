@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { storageService } from "../services/storage.js";
 import { apiService } from "../services/api.js";
 import { IS_SPENDING } from "../constants/prospects.js";
+import { getStatusLabel } from "../utils/scoring.js";
 
 /*
   BACKEND SWITCH — controlled by an environment variable.
@@ -135,6 +136,13 @@ export function useProspects() {
   */
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+
+  /*
+    statusPendingId — the id whose quick status change is currently saving,
+    or null. Same reasoning as deletingId: an id rather than a boolean, so a
+    change on one card doesn't dim every other card's status badge.
+  */
+  const [statusPendingId, setStatusPendingId] = useState(null);
 
   /*
     refreshProspects() — re-fetches the whole list from the server.
@@ -333,6 +341,40 @@ export function useProspects() {
   };
 
   /*
+    setStatus(id, status) — changes ONLY a prospect's pipeline stage.
+
+    This exists separately from updateProspect because the two are used in
+    very different situations. updateProspect is the form saving: it sets the
+    `saving` flag, clears editingProspect, and switches back to the list view.
+    Doing any of that from a card in the list would be wrong — the user never
+    left the list, so there is no view to return to and no form to clear.
+
+    We also can't send just { status } to the service. storage.update merges,
+    but the API does a full replace, so a partial body would blank every other
+    field. Spreading the existing prospect first keeps the record intact and
+    overrides the one field we're actually changing.
+
+    statusPendingId (not a boolean) tracks WHICH prospect is mid-change, so
+    only that one card shows a pending state while the request runs.
+  */
+  const setStatus = (id, status) => {
+    const current = prospects.find((p) => p.id === id);
+    if (!current || current.status === status) return; // no-op if unchanged
+
+    setStatusPendingId(id);
+    return service
+      .update(id, { ...current, status })
+      .then((updated) => {
+        setProspects((prev) => prev.map((p) => (p.id === id ? updated : p)));
+        showToast(`Status → ${getStatusLabel(status)} ✓`);
+      })
+      .catch((err) =>
+        showToast(err.message || "Failed to update status.", "error"),
+      )
+      .finally(() => setStatusPendingId(null));
+  };
+
+  /*
     deleteProspect(id) — removes a prospect.
     .filter() returns a new array without the deleted prospect.
     The drawer closes separately (called from ProspectDetail after this).
@@ -421,11 +463,13 @@ export function useProspects() {
     refreshing, // true while a background re-fetch is running
     saving, // true while an add or update is in flight
     deletingId, // id currently being deleted, or null
+    statusPendingId, // id whose quick status change is saving, or null
     editingProspect, // prospect being edited, or null (add mode)
 
     // Actions — functions that change state or save data
     addProspect,
     updateProspect,
+    setStatus, // (id, status) => changes only the pipeline stage
     deleteProspect,
     selectProspect, // opens detail drawer
     closeDetail, // closes detail drawer

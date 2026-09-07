@@ -60,9 +60,11 @@ function App() {
     refreshing, // true while a background re-fetch is running
     saving, // true while an add or update is in flight
     deletingId, // id currently being deleted, or null
+    statusPendingId, // id whose inline status change is saving, or null
     editingProspect, // prospect being edited in the form, or null
     addProspect, // (data) => saves a new prospect
     updateProspect, // (id, data) => saves changes to an existing prospect
+    setStatus, // (id, status) => changes just the pipeline stage, no form needed
     deleteProspect, // (id) => deletes a prospect
     selectProspect, // (id) => opens the detail drawer for that prospect
     closeDetail, // () => closes the detail drawer
@@ -196,6 +198,8 @@ function App() {
             <ProspectList
               prospects={filteredProspects}
               onSelectProspect={selectProspect}
+              onStatusChange={setStatus} // clicking a card's status badge saves directly
+              statusPendingId={statusPendingId}
               onStartAdd={() => setView("form")}
               hasActiveFilters={hasActiveFilters}
               onClearFilters={clearAllFilters}
@@ -231,6 +235,8 @@ function App() {
         <ProspectDetail
           prospect={selectedProspect}
           onEdit={startEdit} // opens the form in edit mode with this prospect
+          onStatusChange={setStatus} // same quick status change as on the card
+          statusPending={statusPendingId === selectedProspect.id}
           onRefresh={refreshProspects} // re-fetches all prospects from the server
           onToast={showToast} // shows a temporary notification in the top-right corner
           onDelete={deleteProspect}

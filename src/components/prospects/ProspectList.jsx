@@ -7,6 +7,8 @@
   PROPS:
     prospects        — array of prospect objects to display (already filtered and sorted)
     onSelectProspect — (id) => void — called when a card is clicked, opens the drawer
+    onStatusChange   — (id, status) => void — called when a card's status is changed inline
+    statusPendingId  — id whose status change is currently saving, or null
     onStartAdd       — () => void — called when "Add your first prospect" is clicked
     hasActiveFilters — boolean — true if any filter is currently active
     onClearFilters   — () => void — called when "Clear filters" is clicked in empty state
@@ -20,6 +22,8 @@ import Button from '../ui/Button.jsx'
 export default function ProspectList({
   prospects,
   onSelectProspect,
+  onStatusChange,
+  statusPendingId,
   onStartAdd,
   hasActiveFilters,
   onClearFilters,
@@ -115,6 +119,9 @@ export default function ProspectList({
           key={prospect.id}
           prospect={prospect}
           onClick={onSelectProspect}
+          onStatusChange={onStatusChange}
+          /* only the card being changed shows a pending state, not all of them */
+          statusPending={statusPendingId === prospect.id}
         />
       ))}
     </div>

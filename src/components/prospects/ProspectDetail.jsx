@@ -15,6 +15,8 @@
   PROPS:
     prospect  — the full prospect object to display
     onEdit    — (prospect) => void — called when "Edit Prospect" is clicked
+    onStatusChange — (id, status) => void — called when the status badge is used
+    statusPending  — boolean — true while this prospect's status change is saving
     onDelete  — (id) => void — called on the second click of the delete button
     onClose   — () => void — called when the backdrop or × is clicked
     onRefresh — () => Promise — re-fetches all prospects from the server
@@ -24,6 +26,7 @@
 
 import { useEffect, useState } from "react";
 import Badge from "../ui/Badge.jsx";
+import StatusPicker from "./StatusPicker.jsx";
 import Button from "../ui/Button.jsx";
 import Spinner from "../ui/Spinner.jsx";
 import { scoreTextClass } from "../../utils/scoring.js";
@@ -52,6 +55,8 @@ function DetailRow({ label, value }) {
 export default function ProspectDetail({
   prospect,
   onEdit,
+  onStatusChange,
+  statusPending = false,
   onDelete,
   onClose,
   onRefresh,
@@ -229,8 +234,18 @@ export default function ProspectDetail({
             {prospect.name}
           </div>
           <div className="text-sm text-muted">{prospect.niche}</div>
+          {/*
+            Clickable status, same control as on the list card. align="left"
+            because this badge sits at the drawer's left edge — a right-aligned
+            menu would hang off toward the panel's border.
+          */}
           <div className="mt-2">
-            <Badge variant="status" value={prospect.status} />
+            <StatusPicker
+              value={prospect.status}
+              onChange={(status) => onStatusChange(prospect.id, status)}
+              pending={statusPending}
+              align="left"
+            />
           </div>
 
           {/* INFO ROWS — each field as a label-value row with a bottom border */}

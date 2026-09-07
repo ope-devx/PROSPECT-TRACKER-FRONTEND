@@ -4,15 +4,27 @@
   Each card shows a summary of a single prospect. Clicking it opens the
   detail drawer (by calling onClick with the prospect's id).
 
+  The status badge is the one exception to "clicking the card opens the
+  drawer" — it's a StatusPicker, so the status can be changed straight from
+  the list without opening the card and going through the edit form.
+
   PROPS:
-    prospect — the full prospect object from the list
-    onClick  — (id) => void — called when the card is clicked, passing the prospect's id
+    prospect        — the full prospect object from the list
+    onClick         — (id) => void — called when the card is clicked, passing the prospect's id
+    onStatusChange  — (id, status) => void — called when a new status is picked
+    statusPending   — boolean — true while THIS prospect's status change is saving
 */
 
 import Badge from '../ui/Badge.jsx'
+import StatusPicker from './StatusPicker.jsx'
 import { scoreClass, isSpending } from '../../utils/scoring.js'
 
-export default function ProspectCard({ prospect, onClick }) {
+export default function ProspectCard({
+  prospect,
+  onClick,
+  onStatusChange,
+  statusPending = false,
+}) {
 
   /*
     Only show the first 3 pain signals on the card — the drawer shows all of them.
@@ -82,7 +94,21 @@ export default function ProspectCard({ prospect, onClick }) {
           <div className="flex items-start justify-between gap-2">
             <div className="text-[15px] font-medium text-text truncate">{prospect.name}</div>
             {/* truncate adds "…" if the name is too long for the available space */}
-            <Badge variant="status" value={prospect.status} />
+
+            {/*
+              Clickable status. StatusPicker stops the click from bubbling up
+              to the card's own onClick, so changing a status doesn't also
+              open the detail drawer behind the menu.
+
+              align="right" — the badge sits at the card's right edge, so the
+              menu hangs down from that edge rather than overflowing off-screen.
+            */}
+            <StatusPicker
+              value={prospect.status}
+              onChange={(status) => onStatusChange(prospect.id, status)}
+              pending={statusPending}
+              align="right"
+            />
           </div>
 
           {/*
